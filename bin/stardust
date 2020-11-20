@@ -1,0 +1,27 @@
+#!/usr/bin/env python3
+import argparse
+
+from stardust import Stardust
+
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "file",
+        metavar="F",
+        type=str,
+        default="app.py",
+        help="Python file with at least one async function that returns a string, object or Response.",
+    )
+    parser.add_argument(
+        "--port",
+        metavar="P",
+        type=int,
+        default=5000,
+        help="Port number where the framework will listen for incoming requests.",
+    )
+
+    args = parser.parse_args()
+
+    stardust = Stardust(file_path=args.file, port=args.port)
+    stardust.serve()
