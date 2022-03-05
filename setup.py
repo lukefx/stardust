@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-require = ["starlette==0.14.1", "uvicorn==0.12.2"]
+require = ["starlette==0.18.0", "uvicorn==0.17.5"]
 
 setup(
     name="stardust",
