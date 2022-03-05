@@ -4,7 +4,7 @@ require = ["starlette==0.14.1", "uvicorn==0.12.2"]
 
 setup(
     name="stardust",
-    version="0.0.1",
+    version="0.0.2",
     description="Stardust is micro web framework inspired by serveless and lambda deployments.",
     url="https://github.com/lukefx/stardust.git",
     author="Luca Simone",
