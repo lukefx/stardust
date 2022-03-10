@@ -14,10 +14,8 @@ twine = "*"
 [requires]
 python_version = "3.6"
 
-[pipenv]
-allow_prereleases = true
-
 [scripts]
 lint = "black ."
+test = "pytest"
 package = "python3 setup.py sdist"
 publish = "twine upload dist/*"

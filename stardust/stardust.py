@@ -1,7 +1,4 @@
-import os
-from importlib.machinery import SourceFileLoader
-from inspect import getmembers
-from inspect import signature, isfunction, isbuiltin, iscoroutinefunction
+from inspect import signature, iscoroutinefunction
 from typing import Any, Callable
 
 from starlette.applications import Starlette
@@ -13,40 +10,15 @@ from starlette.routing import Route
 
 
 class Stardust:
-    def __init__(self, file_path: str, port=5000, debug=False):
+    def __init__(self, fun: Callable = None, port=8000, debug=False):
         self.debug: bool = debug
         self.app = None
         self.port = port
-        self.module = None
+        self.method = fun
 
-        try:
-            with open(file_path) as f:
-                self.module = SourceFileLoader("app", file_path).load_module()
-
-        except FileNotFoundError:
-            print("No such file or directory.")
-            exit(1)
-
-        self.method = self._find_local_function(self.module, file_path)
         if not self.method:
             print("File must contain at least one local function.")
             exit(1)
-
-    @staticmethod
-    def _find_local_function(module, file_path) -> Callable:
-        method = None
-        # getmembers returns a list of tuples
-        for member in getmembers(module):
-            name, item = member
-            if (
-                isfunction(item)
-                and not isbuiltin(item)
-                # we want to catch only local functions, not imported ones
-                and os.path.samefile(item.__code__.co_filename, file_path)
-            ):
-                method = item
-
-        return method
 
     async def __wrap_response(self, request: Request) -> Any:
         call_if_params = (
