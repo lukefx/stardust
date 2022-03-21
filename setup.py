@@ -11,7 +11,7 @@ with open(os.path.join(THIS_DIR, "README.md"), encoding="utf-8") as f:
 
 setup(
     name="stardust",
-    version="0.0.4.dev0",
+    version="0.0.4",
     description="Stardust is micro web framework inspired by serverless and lambda deployments.",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -27,7 +27,7 @@ setup(
     py_modules=["stardust"],
     scripts=["bin/stardust"],
     packages=find_packages(
-        exclude=["*.tests", "*.tests.*", "tests.*", "tests", "local"]
+        exclude=["examples", "*.tests", "*.tests.*", "tests.*", "tests", "local"]
     ),
     include_package_data=True,
     install_requires=require,

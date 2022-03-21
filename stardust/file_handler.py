@@ -1,32 +1,41 @@
 import os
+from importlib import reload
 from importlib.machinery import SourceFileLoader
 from inspect import getmembers, isfunction, isbuiltin
 from typing import Callable
 
 
-def find_local_function(module, file_path) -> Callable:
+def find_local_function(module, path) -> Callable:
     method = None
+    file_name, file_ext = os.path.splitext(path)
+
     # getmembers returns a list of tuples
-    for member in getmembers(module):
-        name, item = member
+    for name, item in getmembers(module):
         if (
-            isfunction(item)
-            and not isbuiltin(item)
-            # we want to catch only local functions, not imported ones
-            and os.path.samefile(item.__code__.co_filename, file_path)
+            (
+                file_name != "__init__"
+                # we want to catch only local functions, not imported ones
+                and isfunction(item)
+                and not isbuiltin(item)
+                and os.path.samefile(item.__code__.co_filename, path)
+            )
+            or (file_name.endswith("__init__") and isfunction(item))
         ):
             method = item
 
     return method
 
 
-def handle(file_path: str):
-    try:
-        with open(file_path) as f:
-            module = SourceFileLoader("stardust.app", file_path).load_module()
+def handle(path: str):
+    module_path = path
 
-    except FileNotFoundError:
+    if os.path.isdir(path):
+        module_path = os.path.join(path, "__init__.py")
+
+    if os.path.exists(module_path):
+        module = SourceFileLoader("stardust.app", module_path).load_module()
+    else:
         print("No such file or directory.")
         exit(1)
 
-    return find_local_function(module, file_path)
+    return find_local_function(module, module_path)
