@@ -23,9 +23,53 @@ $ stardust app.py
 
 You're up and running! 🎉
 
-### More complex cases
 
-#### Apps with multiple files
+### Response types
+
+For a more complex response, where you would like to specify an HTTP status code or a custom media type, just use the
+`send` method insted or returning a dict.
+
+```python
+from stardust.responses import send
+
+async def serve(req):
+    return send(
+        content={"Hello": "World"}, 
+        status_code=201, 
+        media_type="application/vnd.stardust.api.v1+json"
+    )
+```
+
+### Others return types
+
+```python
+from stardust.responses import send, json, text, stream, html, redirect, file
+
+async def serve():
+    # General method, automatically identifies the payload type
+    return send({"Hello": "World"})
+
+    # JSON
+    return json({"Hello": "World"})
+
+    # Plain text
+    return text("Hello World")
+
+    # Streaming content (requires a generator function)
+    return stream(generator_fun)
+
+    # Html content
+    return html("<html><body>Hello World</body></html>")
+
+    # Redirect to another location
+    return redirect("https://www.google.com")
+
+    # Returns a file
+    return file(file_path)
+
+```
+
+### Apps with multiple files
 
 For more complex cases or apps that are not just one function, Stardust is also able to use a module as starting point.
 
