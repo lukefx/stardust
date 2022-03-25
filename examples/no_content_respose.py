@@ -1,5 +1,5 @@
-from starlette.responses import Response
+from stardust.responses import send
 
 
 async def serve(req):
-    return Response(status_code=204)
+    return send(status_code=204)

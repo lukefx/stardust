@@ -11,7 +11,7 @@ with open(os.path.join(THIS_DIR, "README.md"), encoding="utf-8") as f:
 
 setup(
     name="stardust",
-    version="0.0.4",
+    version="0.0.5-rc1",
     description="Stardust is micro web framework inspired by serverless and lambda deployments.",
     long_description=long_description,
     long_description_content_type="text/markdown",

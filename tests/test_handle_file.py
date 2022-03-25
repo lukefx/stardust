@@ -21,6 +21,13 @@ def __write_app(tmp_path, app: str):
     return p.as_posix()
 
 
+def test_file_not_found(capsys):
+    captured = capsys.readouterr()
+    with pytest.raises(SystemExit) as e:
+        fun = handle("fake_not_existing_path")
+        assert captured.out == "No such file or directory."
+
+
 def test_simple_file(tmp_path, clean_module):
     app = """
     async def serve(req):

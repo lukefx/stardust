@@ -1,9 +1,9 @@
 import pytest
 from starlette.requests import Request
-from starlette.responses import Response, PlainTextResponse
 from starlette.testclient import TestClient
 
 from stardust import Stardust
+from stardust.responses import send, text, json
 
 
 def test_json_app():
@@ -28,9 +28,20 @@ def test_json_app_with_request():
     assert "hello" in response.json()
 
 
-def test_custom_status_code():
+def test_json_app_with_request_and_send():
     async def serve(req):
-        return Response(status_code=204)
+        return send({"hello": "world"})
+
+    app = Stardust(fun=serve).build()
+    client = TestClient(app)
+    response = client.get("/")
+    assert response.status_code == 200
+    assert "hello" in response.json()
+
+
+def test_empty_content():
+    async def serve():
+        return
 
     app = Stardust(fun=serve).build()
     client = TestClient(app)
@@ -38,9 +49,30 @@ def test_custom_status_code():
     assert response.status_code == 204
 
 
+def test_custom_status_code():
+    async def serve(req):
+        return send({"Hello": "World"}, status_code=400)
+
+    app = Stardust(fun=serve).build()
+    client = TestClient(app)
+    response = client.get("/")
+    assert response.status_code == 400
+
+
+def test_send_json():
+    async def serve(req):
+        return json({"hello": "world"})
+
+    app = Stardust(fun=serve).build()
+    client = TestClient(app)
+    response = client.get("/")
+    assert response.status_code == 200
+    assert "world" in response.json()["hello"]
+
+
 def test_response_plain_text():
     async def serve(req):
-        return PlainTextResponse("Hello World!")
+        return text("Hello World!")
 
     app = Stardust(fun=serve).build()
     client = TestClient(app)
@@ -77,7 +109,11 @@ def test_post_payload():
 
 def test_headers_response():
     async def serve():
-        return Response(status_code=200, headers={"x-custom-header": "hello world"})
+        return send(
+            {"Hello": "World"},
+            status_code=200,
+            headers={"x-custom-header": "hello world"},
+        )
 
     app = Stardust(fun=serve).build()
     client = TestClient(app)
@@ -92,3 +128,4 @@ def test_empty_file(capsys):
     with pytest.raises(SystemExit) as e:
         app = Stardust().build()
         assert captured.out == "File must contain at least one local function."
+

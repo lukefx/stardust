@@ -1,5 +1,5 @@
-from starlette.responses import PlainTextResponse
+from stardust.responses import text
 
 
-async def serve(req):
-    return PlainTextResponse("Hello World!")
+async def serve():
+    return text("Hello World!")

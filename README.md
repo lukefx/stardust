@@ -25,6 +25,8 @@ You're up and running! 🎉
 
 ### More complex cases
 
+#### Apps with multiple files
+
 For more complex cases or apps that are not just one function, Stardust is also able to use a module as starting point.
 
 Create a Python module:
@@ -47,6 +49,15 @@ And specify the module folder instead of a file:
 
 ```sh
 $ stardust ./example_module
+```
+
+#### Apps with different responses
+
+```py
+from stardust.responses import json
+
+async def serve():
+    return json(content={"hello":"world"}, status_code=200)
 ```
 
 ### Contributing
