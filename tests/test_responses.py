@@ -3,7 +3,7 @@ from asyncio import Future
 from json import dumps
 from unittest.mock import MagicMock
 
-from stardust.responses import json, text, stream, html
+from stardust.responses import json, text, stream, html, redirect, file
 
 
 def test_json_response():
@@ -52,3 +52,18 @@ def test_html_response():
     assert response
     assert response.media_type == "text/html"
     assert response.body == content.encode()
+
+
+def test_redirect_response():
+    response = redirect("http://google.com")
+    assert response
+    assert response.status_code == 307
+    assert "location" in response.headers
+    assert response.headers.get("location") == "http://google.com"
+
+
+def test_file_response(tmp_path):
+    p = tmp_path / "greetings.mp3"
+    p.write_text("Hello world")
+    response = file(p.as_posix())
+    assert response.status_code == 200

@@ -20,7 +20,7 @@ class Stardust:
         self.method = fun
 
         if not self.method:
-            sys.stderr.write("File must contain at least one local function.")
+            print("File must contain at least one local function.", file=sys.stderr)
             exit(1)
 
     async def __wrap_response(self, request: Request):
@@ -43,7 +43,7 @@ class Stardust:
             return send(result)
 
     def startup(self):
-        sys.stdout.write(f"Stardust listening on {self.port} 🎉")
+        print(f"Stardust listening on {self.port} 🎉", file=sys.stdout)
 
     def build(self):
 

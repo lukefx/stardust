@@ -128,4 +128,3 @@ def test_empty_file(capsys):
     with pytest.raises(SystemExit) as e:
         app = Stardust().build()
         assert captured.out == "File must contain at least one local function."
-

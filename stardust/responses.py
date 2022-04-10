@@ -73,5 +73,5 @@ def redirect(url: str):
     return RedirectResponse(url)
 
 
-def file(path: str):
-    return FileResponse(path)
+def file(path: str, filename: str = None):
+    return FileResponse(path, filename=filename)

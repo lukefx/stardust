@@ -14,10 +14,10 @@ def find_local_function(module, path) -> Callable:
     for name, item in getmembers(module):
         if (
             file_name != "__init__"
-            # we want to catch only local functions, not imported ones
             and isfunction(item)
             and not isbuiltin(item)
-            and os.path.samefile(item.__code__.co_filename, path)
+            # we want to catch only local functions, not imported ones
+            and item.__module__ == module.__name__
         ) or (file_name == "__init__" and isfunction(item)):
             method = item
 
@@ -33,7 +33,7 @@ def handle(path: str):
     if os.path.exists(module_path):
         module = SourceFileLoader("stardust.app", module_path).load_module()
     else:
-        sys.stderr.write("No such file or directory.")
+        print("No such file or directory.", file=sys.stderr)
         exit(1)
 
     return find_local_function(module, module_path)
