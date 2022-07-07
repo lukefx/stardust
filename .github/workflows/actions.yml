@@ -18,6 +18,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
+        id: setup-python
         with:
           python-version: ${{ matrix.python-version }}
           cache: 'pipenv'
@@ -25,7 +26,7 @@ jobs:
       - name: Install pipenv
         run: curl https://raw.githubusercontent.com/pypa/pipenv/master/get-pipenv.py | python
 
-      - run: pipenv install
+      - run: pipenv install --python '${{ steps.setup-python.outputs.python-path }}'
 
       - name: Run tests
         run: |
