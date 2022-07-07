@@ -11,9 +11,6 @@ pytest = "*"
 black = "*"
 twine = "*"
 
-[requires]
-python_version = "3.6"
-
 [scripts]
 lint = "black ."
 test = "pytest"

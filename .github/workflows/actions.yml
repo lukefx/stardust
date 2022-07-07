@@ -1,0 +1,33 @@
+name: Tests
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.7', '3.8', '3.9', '3.10']
+    name: Python ${{ matrix.python-version }}
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        id: setup-python
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pipenv'
+
+      - name: Install pipenv
+        run: curl https://raw.githubusercontent.com/pypa/pipenv/master/get-pipenv.py | python
+
+      - run: pipenv install --dev --python '${{ steps.setup-python.outputs.python-path }}'
+
+      - name: Run tests
+        run: |
+          pipenv run test
