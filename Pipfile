@@ -4,12 +4,13 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-stardust = {editable = true, path = "."}
+stardust = {file = ".", editable = true}
 
 [dev-packages]
 pytest = "*"
 black = "*"
 twine = "*"
+httpx = "*"
 
 [scripts]
 lint = "black ."
