@@ -1,41 +1,54 @@
-import os
-from importlib import reload
-from importlib.machinery import SourceFileLoader
-from inspect import getmembers, isfunction, isbuiltin
+import importlib.util
+import sys
+from inspect import getmembers, isbuiltin, isfunction
+from pathlib import Path
 from typing import Callable
 
 
-def find_local_function(module, path) -> Callable:
-    method = None
-    file_name, file_ext = os.path.splitext(path)
-
+def find_local_function(module) -> Callable | None:
     # getmembers returns a list of tuples
     for name, item in getmembers(module):
-        if (
-            (
-                file_name != "__init__"
-                # we want to catch only local functions, not imported ones
-                and isfunction(item)
-                and not isbuiltin(item)
-                and os.path.samefile(item.__code__.co_filename, path)
-            )
-            or (file_name.endswith("__init__") and isfunction(item))
-        ):
-            method = item
+        # Check if it's a function but not a builtin
+        if isfunction(item) and not isbuiltin(item):
+            # Check if function is defined in this module by comparing its code location
+            # Also check if the function's module is the same or a submodule
+            if hasattr(item, "__code__") and (
+                item.__module__ == module.__name__
+                or item.__module__.startswith(f"{module.__name__}.")
+            ):
+                return item
 
-    return method
+    # Nothing found
+    return None
 
 
-def handle(path: str):
-    module_path = path
+def load_module(module_name: str, path: str | Path):
+    path = Path(path)
 
-    if os.path.isdir(path):
-        module_path = os.path.join(path, "__init__.py")
-
-    if os.path.exists(module_path):
-        module = SourceFileLoader("stardust.app", module_path).load_module()
+    # Handle directory case
+    if path.is_dir():
+        init_file = path / "__init__.py"
+        if not init_file.is_file():
+            raise FileNotFoundError(f"'{init_file}' does not exist")
+        target_path = init_file
+    # Handle file case
+    elif path.is_file():
+        target_path = path
     else:
-        print("No such file or directory.")
-        exit(1)
+        raise ValueError(f"Path '{path}' is neither a file nor directory")
 
-    return find_local_function(module, module_path)
+    # Create a module spec from the location
+    spec = importlib.util.spec_from_file_location(module_name, str(target_path))
+    if spec is None:
+        raise ImportError(f"Cannot find spec for module '{module_name}' at '{path}'")
+
+    # Create and execute module
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def handle(path: str) -> Callable:
+    module = load_module("stardust.app", path)
+    return find_local_function(module)

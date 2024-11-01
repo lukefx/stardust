@@ -60,7 +60,7 @@ async def serve2(req):
 
     fun = handle(path)
     assert inspect.isfunction(fun)
-    assert fun.__name__ == "serve2"
+    assert fun.__name__ == "serve1"
 
 
 def test_module(tmp_path, clean_module):

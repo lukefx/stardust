@@ -12,7 +12,7 @@ if __name__ == "__main__":
         metavar="F",
         type=str,
         default="app.py",
-        help="Python file with at least one async function that returns a string, object or Response.",
+        help="Python file or directory with at least one async function that returns a string, object or Response.",
     )
     parser.add_argument(
         "--port",

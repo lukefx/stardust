@@ -21,10 +21,8 @@ class Stardust:
             exit(1)
 
     async def __wrap_response(self, request: Request) -> Any:
-        call_if_params = (
-            lambda method, req: method(req)
-            if len(signature(method).parameters) > 0
-            else method()
+        call_if_params = lambda method, req: (
+            method(req) if len(signature(method).parameters) > 0 else method()
         )
 
         response = (
