@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.7', '3.8', '3.9', '3.10']
+        python-version: ['3.9', '3.10', '3.11', '3.12', '3.13']
     name: Python ${{ matrix.python-version }}
 
     steps:
@@ -26,8 +26,18 @@ jobs:
       - name: Install pipenv
         run: curl https://raw.githubusercontent.com/pypa/pipenv/master/get-pipenv.py | python
 
-      - run: pipenv install --dev --python '${{ steps.setup-python.outputs.python-path }}'
+      - name: Install dependencies
+        run: pipenv install --dev --python '${{ steps.setup-python.outputs.python-path }}'
 
       - name: Run tests
         run: |
           pipenv run test
+
+      - name: Publish Python 🐍 distribution 📦 to PyPI and TestPyPI
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        run: |
+          pipenv run package
+          pipenv run publish
