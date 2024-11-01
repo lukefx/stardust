@@ -3,8 +3,9 @@ import sys
 
 import uvicorn
 
-from stardust.file_handler import handle
-from stardust.stardust import Stardust
+from .stardust import Stardust
+
+from .file_handler import handle
 
 
 def main():
@@ -37,6 +38,3 @@ def main():
     uvicorn.run(
         app, host="0.0.0.0", port=args.port, access_log=False, log_level="error"
     )
-
-
-sys.exit(main())
