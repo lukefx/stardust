@@ -1,3 +1,36 @@
-[build-system]
-requires = ["setuptools", "wheel"]
-build-backend = "setuptools.build_meta:__legacy__"
+[project]
+name = "stardust"
+version = "0.0.5"
+description = "Stardust is micro web framework inspired by serverless and lambda deployments."
+readme = "README.md"
+requires-python = ">=3.10"
+
+authors = [
+  {name = "Luca Simone", email = "info@lucasimone.info"}
+]
+
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Intended Audience :: Developers",
+  "Topic :: Software Development :: Web Framework",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+]
+
+dependencies = [
+    "starlette>=0.41.2",
+    "uvicorn>=0.32.0",
+]
+
+[project.urls]
+Repository = "https://github.com/lukefx/stardust"
+
+[project.scripts]
+stardust = "stardust:main"
+
+[project.optional-dependencies]
+test = ["pytest"]
