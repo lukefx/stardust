@@ -54,11 +54,13 @@ $ stardust ./example_module
 Clone the project, install all the dependencies with:
 
 ```bash
-$ pipenv install
+$ uv python install 3.13
+$ uv sync
 ```
 
-Linting:
+Testing and linting
 
 ```bash
-$ pipenv run lint
+$ uv run pytest
+$ uv tool run ruff format .
 ```
