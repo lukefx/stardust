@@ -43,8 +43,7 @@ def main():
 
     parser.add_argument(
         "--debug",
-        metavar="D",
-        type=bool,
+        action="store_true",
         default=False,
         help="Enable debug option.",
     )

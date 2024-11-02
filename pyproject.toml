@@ -11,6 +11,19 @@ requires-python = ">=3.10"
 authors = [
   {name = "Luca Simone", email = "info@lucasimone.info"}
 ]
+license = {text = "MIT"}  # or appropriate license
+keywords = ["web", "framework", "serverless", "lambda"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
 
 dependencies = [
     "starlette>=0.41.2,<0.42.0",
