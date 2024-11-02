@@ -1,15 +1,12 @@
 import argparse
-import sys
 
 import uvicorn
 
-from .stardust import Stardust
-
 from .file_handler import handle
+from .stardust import Stardust
 
 
 def main():
-
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "file",
@@ -33,6 +30,18 @@ def main():
     )
 
     parser.add_argument(
+        "--host",
+        default="0.0.0.0",
+        help="Host address to bind the server to.",
+    )
+    parser.add_argument(
+        "--log-level",
+        choices=["critical", "error", "warning", "info", "debug"],
+        default="error",
+        help="Logging level for the server.",
+    )
+
+    parser.add_argument(
         "--debug",
         metavar="D",
         type=bool,
@@ -44,5 +53,9 @@ def main():
     fun = handle(args.file)
     app = Stardust(fun=fun, port=args.port, debug=args.debug).build()
     uvicorn.run(
-        app, host="0.0.0.0", port=args.port, access_log=False, log_level="error"
+        app,
+        host=args.host,
+        port=args.port,
+        access_log=args.debug,
+        log_level=args.log_level,
     )

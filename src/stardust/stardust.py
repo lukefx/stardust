@@ -40,7 +40,6 @@ class Stardust:
         print(f"Stardust listening on {self.port} 🎉")
 
     def build(self):
-
         middlewares = [
             Middleware(CORSMiddleware, allow_origins=["*"]),
         ]
