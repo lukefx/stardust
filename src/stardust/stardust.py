@@ -1,3 +1,4 @@
+import contextlib
 from inspect import signature, iscoroutinefunction
 from typing import Any, Callable
 
@@ -36,8 +37,12 @@ class Stardust:
             response = JSONResponse(response)
         return response
 
-    def startup(self):
-        print(f"Stardust listening on {self.port} 🎉")
+    @contextlib.asynccontextmanager
+    async def lifespan(app):
+        async with some_async_resource():
+            print(f"Stardust listening on {self.port} 🎉")
+            yield
+            print(f"Shutting down Stardust on {self.port} 💥")
 
     def build(self):
         middlewares = [
@@ -52,7 +57,7 @@ class Stardust:
             debug=self.debug,
             middleware=middlewares,
             routes=routes,
-            on_startup=[self.startup],
+            lifespan=self.lifespan,
         )
 
         return self.app
