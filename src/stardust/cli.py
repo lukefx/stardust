@@ -9,14 +9,21 @@ from .file_handler import handle
 
 
 def main():
+
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--file",
-        metavar="F",
-        type=str,
+        "file",
+        nargs="?",
         default="app.py",
         help="Python file or directory with at least one async function that returns a string, object or Response.",
     )
+
+    parser.add_argument(
+        "--file",
+        dest="file",
+        help="Python file or directory with at least one async function that returns a string, object or Response.",
+    )
+
     parser.add_argument(
         "--port",
         metavar="P",
@@ -24,6 +31,7 @@ def main():
         default=8000,
         help="Port number where the framework will listen for incoming requests.",
     )
+
     parser.add_argument(
         "--debug",
         metavar="D",
