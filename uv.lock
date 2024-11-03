@@ -157,7 +157,7 @@ wheels = [
 
 [[package]]
 name = "stardust"
-version = "0.0.6rc1"
+version = "0.0.7rc1"
 source = { editable = "." }
 dependencies = [
     { name = "starlette" },

@@ -37,13 +37,12 @@ class Stardust:
             response = JSONResponse(response)
         return response
 
-    @contextlib.asynccontextmanager
-    async def lifespan(app):
-        async with some_async_resource():
+    async def lifespan(self, app):
+        async with contextlib.AsyncExitStack() as stack:
             print(f"Stardust listening on {self.port} 🎉")
             yield
             print(f"Shutting down Stardust on {self.port} 💥")
-
+    
     def build(self):
         middlewares = [
             Middleware(CORSMiddleware, allow_origins=["*"]),
