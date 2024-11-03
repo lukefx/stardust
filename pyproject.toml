@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "stardust"
-version = "0.0.7rc1"
+version = "0.0.7"
 description = "Stardust is micro web framework inspired by serverless and lambda deployments."
 readme = "README.md"
 requires-python = ">=3.10"
