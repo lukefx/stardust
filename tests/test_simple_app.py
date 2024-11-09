@@ -92,3 +92,18 @@ def test_empty_file(capsys):
     with pytest.raises(SystemExit) as e:
         app = Stardust().build()
         assert captured.out == "File must contain at least one local function."
+
+
+def test_lifespan_logging_with_testclient(capsys):
+    async def serve():
+        return {"status": "ok"}
+
+    app = Stardust(fun=serve).build()
+    client = TestClient(app)
+
+    with client:
+        captured = capsys.readouterr()
+        assert "Stardust listening on 8000 🎉" in captured.out
+
+    captured = capsys.readouterr()
+    assert "Shutting down Stardust on 8000 💥" in captured.out

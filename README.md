@@ -1,66 +1,147 @@
-# Stardust
+# Stardust 🌟
 
-Micro framework inspired by the simple lambda or serveless deployment.
+[![PyPI version](https://badge.fury.io/py/stardust.svg)](https://badge.fury.io/py/stardust)
+[![Python Versions](https://img.shields.io/pypi/pyversions/stardust.svg)](https://pypi.org/project/stardust/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-### Usage:
+A micro web framework inspired by serverless and lambda deployments, designed for simplicity and efficiency.
 
-```sh
-$ pip install stardust
+## Table of Contents
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Features](#features)
+- [Usage Examples](#usage-examples)
+- [Development](#development)
+- [Contributing](#contributing)
+- [License](#license)
+
+## Installation
+
+Install Stardust using pip:
+
+```bash
+pip install stardust
 ```
 
-Create a file with a coroutine function that returns a dict, for example `app.py`:
+Requires Python 3.10 or higher.
+
+## Quick Start
+
+Create a simple API in seconds with `app.py`:
+
 ```python
 async def serve(req):
-    return {
-      'hello': 'world'
-    }
+    return {"hello": "world"}
 ```
 
-Now just start the framework, nothing more to do...
-```sh
-$ stardust app.py
+Run your application:
+
+```bash
+stardust app.py
 ```
 
-You're up and running! 🎉
+Your API will be available at `http://localhost:8000`
 
-### More complex cases
+## Features
 
-For more complex cases or apps that are not just one function, Stardust is also able to use a module as starting point.
+- 🚀 **Minimal Setup**: Create APIs with just a single function
+- 🛠 **Modern Python**: Built for Python 3.10+ with full async support
+- 🔌 **CORS Enabled**: Built-in CORS middleware for web applications
+- ⚡ **Fast**: Powered by Starlette and Uvicorn
+- 🧩 **Flexible Responses**: Support for JSON, Plain Text, and custom Response objects
+- 🔍 **Developer Friendly**: Debug mode and customizable logging
 
-Create a Python module:
+## Usage Examples
 
-```sh
-$ tree example_module
-example_module
-├── __init__.py
-└── app.py
-```
-
-Let's assume app is a complex app with many functions, you can find an example into the `examples` folder.
-The module should export only the main function that Stardust will use as entrypoint:
+### JSON Response
 
 ```python
-from .app import serve
+async def serve(req):
+    return {"message": "Hello, World!"}
 ```
 
-And specify the module folder instead of a file:
+### Plain Text Response
 
-```sh
-$ stardust ./example_module
+```python
+from starlette.responses import PlainTextResponse
+
+async def serve(req):
+    return PlainTextResponse("Hello, World!")
 ```
 
-### Contributing
+### Query Parameters
 
-Clone the project, install all the dependencies with:
+```python
+async def serve(req):
+    name = req.query_params.get("name", "world")
+    return {"hello": name}
+```
+
+### POST Request Handler
+
+```python
+async def serve(req):
+    body = await req.json()
+    return body  # Echo back the request body
+```
+
+### Custom Status Codes
+
+```python
+from starlette.responses import Response
+
+async def serve(req):
+    return Response(status_code=204)
+```
+
+## Command Line Options
 
 ```bash
-$ uv python install 3.13
-$ uv sync
+stardust [options] [file]
+
+Options:
+  --port PORT        Port number (default: 8000)
+  --host HOST        Host address (default: 0.0.0.0)
+  --log-level LEVEL  Logging level (default: error)
+  --debug           Enable debug mode
 ```
 
-Testing and linting
+## Development
+
+To set up the development environment:
 
 ```bash
-$ uv run pytest
-$ uv tool run ruff format .
+# Clone the repository
+git clone https://github.com/lukefx/stardust
+cd stardust
+
+# Install development dependencies
+uv sync --all-extras --dev
+
+# Run tests
+uv run pytest
 ```
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Acknowledgements
+
+Built with:
+- [Starlette](https://www.starlette.io/)
+- [Uvicorn](https://www.uvicorn.org/)
+
+---
+
+Created by [Luca Simone](mailto:info@lucasimone.info)

@@ -69,3 +69,30 @@ def test_module(tmp_path, clean_module):
     assert fun is not None
     assert inspect.isfunction(fun)
     assert fun.__name__ == "serve_1"
+
+
+def test_no_local_function(tmp_path, clean_module):
+    app = """
+    # No function defined
+    """.strip()
+    path = __write_app(tmp_path, app)
+
+    fun = handle(path)
+    assert fun is None
+
+
+def test_invalid_path(tmp_path, clean_module):
+    # Create a path that is neither a file nor a directory
+    path = tmp_path / "non_existent_path"
+
+    with pytest.raises(ValueError, match="neither a file nor directory"):
+        handle(path)
+
+
+def test_directory_without_init(tmp_path, clean_module):
+    # Create a directory without an __init__.py file
+    path = tmp_path / "empty_dir"
+    path.mkdir()
+
+    with pytest.raises(FileNotFoundError, match="does not exist"):
+        handle(path)
