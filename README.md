@@ -23,7 +23,7 @@ Install Stardust using pip:
 pip install stardust
 ```
 
-Requires Python 3.10 or higher.
+Requires Python 3.10 or higher. CI validates compatibility on Python 3.10 through 3.14.
 
 ## Quick Start
 
@@ -45,7 +45,7 @@ Your API will be available at `http://localhost:8000`
 ## Features
 
 - 🚀 **Minimal Setup**: Create APIs with just a single function
-- 🛠 **Modern Python**: Built for Python 3.10+ with full async support
+- 🛠 **Modern Python**: Built for Python 3.10+ and tested on Python 3.10-3.14
 - 🔌 **CORS Enabled**: Built-in CORS middleware for web applications
 - ⚡ **Fast**: Powered by Starlette and Uvicorn
 - 🧩 **Flexible Responses**: Support for JSON, Plain Text, and custom Response objects

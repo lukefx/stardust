@@ -8,17 +8,25 @@ jobs:
   test_pypi_release:
     runs-on: ubuntu-latest
     environment: TestPyPi
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version:
+          - "3.10"
+          - "3.14"
     steps:
       - uses: actions/checkout@v4
       - name: Install uv
         uses: astral-sh/setup-uv@v3
-      - name: Set up Python 3.10
-        run: uv python install 3.10
+      - name: Set up Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
       - name: Install the project
         run: uv sync --all-extras --dev
       - run: uv run pytest
       - run: uv build
+        if: matrix.python-version == '3.14'
       - name: Publish to Test PyPI
+        if: matrix.python-version == '3.14'
         env:
           UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
         run: uv publish --publish-url https://test.pypi.org/legacy/
