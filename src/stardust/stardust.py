@@ -38,7 +38,7 @@ class Stardust:
         return response
 
     @contextlib.asynccontextmanager
-    async def lifespan(self, app):
+    async def lifespan(self, _app):
         print(f"Stardust listening on {self.port} 🎉")
         try:
             yield
