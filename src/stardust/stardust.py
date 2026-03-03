@@ -37,10 +37,12 @@ class Stardust:
             response = JSONResponse(response)
         return response
 
-    async def lifespan(self, app):
-        async with contextlib.AsyncExitStack() as stack:
-            print(f"Stardust listening on {self.port} 🎉")
+    @contextlib.asynccontextmanager
+    async def lifespan(self, _app):
+        print(f"Stardust listening on {self.port} 🎉")
+        try:
             yield
+        finally:
             print(f"Shutting down Stardust on {self.port} 💥")
     
     def build(self):
