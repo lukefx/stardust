@@ -21,8 +21,8 @@ jobs:
       - name: Set up Python ${{ matrix.python-version }}
         run: uv python install ${{ matrix.python-version }}
       - name: Install the project
-        run: uv sync --all-extras --dev
-      - run: uv run pytest
+        run: uv sync --all-extras --dev --python ${{ matrix.python-version }}
+      - run: uv run --python ${{ matrix.python-version }} pytest
       - run: uv build
         if: matrix.python-version == '3.14'
       - name: Publish to Test PyPI
