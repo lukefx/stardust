@@ -1,3 +1,4 @@
+import logging
 import contextlib
 from inspect import signature, iscoroutinefunction
 from typing import Any, Callable
@@ -9,6 +10,12 @@ from starlette.requests import Request
 from starlette.responses import Response, JSONResponse
 from starlette.routing import Route
 
+logger = logging.getLogger(__name__)
+
+
+class InvalidApplicationError(ValueError):
+    pass
+
 
 class Stardust:
     def __init__(self, fun: Callable = None, port=8000, debug=False):
@@ -18,8 +25,7 @@ class Stardust:
         self.method = fun
 
         if not self.method:
-            print("File must contain at least one local function.")
-            exit(1)
+            raise InvalidApplicationError("File must contain at least one local function.")
 
     async def __wrap_response(self, request: Request) -> Any:
         call_if_params = lambda method, req: (
@@ -39,11 +45,11 @@ class Stardust:
 
     @contextlib.asynccontextmanager
     async def lifespan(self, _app):
-        print(f"Stardust listening on {self.port} 🎉")
+        logger.info("Stardust listening", extra={"port": self.port})
         try:
             yield
         finally:
-            print(f"Shutting down Stardust on {self.port} 💥")
+            logger.info("Shutting down Stardust", extra={"port": self.port})
     
     def build(self):
         middlewares = [

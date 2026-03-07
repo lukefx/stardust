@@ -3,7 +3,7 @@ from starlette.requests import Request
 from starlette.responses import Response, PlainTextResponse
 from starlette.testclient import TestClient
 
-from stardust import Stardust
+from stardust import InvalidApplicationError, Stardust
 
 
 def test_json_app():
@@ -87,23 +87,21 @@ def test_headers_response():
     assert "hello" in response.headers["x-custom-header"]
 
 
-def test_empty_file(capsys):
-    captured = capsys.readouterr()
-    with pytest.raises(SystemExit) as e:
-        app = Stardust().build()
-        assert captured.out == "File must contain at least one local function."
+def test_empty_file():
+    with pytest.raises(InvalidApplicationError, match="File must contain at least one local function."):
+        Stardust().build()
 
 
-def test_lifespan_logging_with_testclient(capsys):
+def test_lifespan_logging_with_testclient(caplog):
     async def serve():
         return {"status": "ok"}
 
     app = Stardust(fun=serve).build()
     client = TestClient(app)
 
-    with client:
-        captured = capsys.readouterr()
-        assert "Stardust listening on 8000 🎉" in captured.out
+    caplog.set_level("INFO")
 
-    captured = capsys.readouterr()
-    assert "Shutting down Stardust on 8000 💥" in captured.out
+    with client:
+        assert "Stardust listening" in caplog.text
+
+    assert "Shutting down Stardust" in caplog.text

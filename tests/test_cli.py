@@ -1,3 +1,5 @@
+import pytest
+
 from stardust.cli import main
 
 
@@ -23,3 +25,21 @@ def test_main_with_custom_arguments(monkeypatch):
             access_log=True,
             log_level='info',
         )
+
+
+def test_main_exits_when_no_application_function_is_found(monkeypatch, caplog):
+    from argparse import Namespace
+    from unittest.mock import patch
+
+    mock_args = Namespace(file='empty_app.py', port=8080, host='127.0.0.1', log_level='info', debug=False)
+    monkeypatch.setattr('argparse.ArgumentParser.parse_args', lambda self: mock_args)
+
+    with patch('stardust.cli.handle', return_value=None), \
+         patch('uvicorn.run') as mock_uvicorn_run:
+        caplog.set_level('ERROR')
+
+        with pytest.raises(SystemExit, match='1'):
+            main()
+
+        mock_uvicorn_run.assert_not_called()
+        assert 'File must contain at least one local function.' in caplog.text
