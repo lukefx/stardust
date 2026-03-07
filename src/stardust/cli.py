@@ -1,9 +1,12 @@
 import argparse
+import logging
 
 import uvicorn
 
 from .file_handler import handle
-from .stardust import Stardust
+from .stardust import InvalidApplicationError, Stardust
+
+logger = logging.getLogger(__name__)
 
 
 def main():
@@ -49,8 +52,13 @@ def main():
     )
 
     args = parser.parse_args()
-    fun = handle(args.file)
-    app = Stardust(fun=fun, port=args.port, debug=args.debug).build()
+    try:
+        fun = handle(args.file)
+        app = Stardust(fun=fun, port=args.port, debug=args.debug).build()
+    except InvalidApplicationError as exc:
+        logger.error("Failed to load Stardust app: %s", exc, extra={"file": args.file, "error": str(exc)})
+        parser.exit(status=1, message=f"{exc}\n")
+
     uvicorn.run(
         app,
         host=args.host,
