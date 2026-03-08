@@ -1,1 +1,1 @@
-from .stardust import Stardust
+from .stardust import InvalidApplicationError, Stardust
