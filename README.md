@@ -1,147 +1,117 @@
-# Stardust 🌟
+# Stardust
 
 [![PyPI version](https://badge.fury.io/py/stardust.svg)](https://badge.fury.io/py/stardust)
 [![Python Versions](https://img.shields.io/pypi/pyversions/stardust.svg)](https://pypi.org/project/stardust/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A micro web framework inspired by serverless and lambda deployments, designed for simplicity and efficiency.
+Stardust is a minimal ASGI microframework for serving a single Python function as an HTTP endpoint. It is built on top of Starlette and Uvicorn and is designed around a simple contract: load one local function, expose it at `/`, and convert its return value into an HTTP response.
 
-## Table of Contents
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [Features](#features)
-- [Usage Examples](#usage-examples)
-- [Development](#development)
-- [Contributing](#contributing)
-- [License](#license)
+## What It Does
+
+- Loads a Python file or package directory.
+- Finds the first local function defined in that module.
+- Serves that function on `/` for `GET` and `POST`.
+- Passes the incoming `Request` object when the function accepts parameters.
+- Wraps non-`Response` return values in `JSONResponse`.
+- Enables permissive CORS by default.
 
 ## Installation
-
-Install Stardust using pip:
 
 ```bash
 pip install stardust
 ```
 
-Requires Python 3.10 or higher. CI validates compatibility on Python 3.10 through 3.14.
+Requires Python 3.10 or newer.
 
 ## Quick Start
 
-Create a simple API in seconds with `app.py`:
+Create `app.py`:
 
 ```python
 async def serve(req):
     return {"hello": "world"}
 ```
 
-Run your application:
+Run it:
 
 ```bash
 stardust app.py
 ```
 
-Your API will be available at `http://localhost:8000`
+The app will be available at `http://localhost:8000/`.
 
-## Features
+## Application Contract
 
-- 🚀 **Minimal Setup**: Create APIs with just a single function
-- 🛠 **Modern Python**: Built for Python 3.10+ and tested on Python 3.10-3.14
-- 🔌 **CORS Enabled**: Built-in CORS middleware for web applications
-- ⚡ **Fast**: Powered by Starlette and Uvicorn
-- 🧩 **Flexible Responses**: Support for JSON, Plain Text, and custom Response objects
-- 🔍 **Developer Friendly**: Debug mode and customizable logging
+Stardust looks for the first local function in the target module. That function can be:
 
-## Usage Examples
+- `async def serve(req): ...`
+- `async def serve(): ...`
+- `def serve(req): ...`
+- `def serve(): ...`
 
-### JSON Response
+If the function accepts at least one parameter, Stardust passes the Starlette `Request` object. If it accepts no parameters, it is called without arguments.
 
-```python
-async def serve(req):
-    return {"message": "Hello, World!"}
-```
+### Return Values
 
-### Plain Text Response
+- `dict`, `list`, and other JSON-serializable values are returned as JSON.
+- Any Starlette `Response` subclass is returned unchanged.
+- Status codes and headers should be controlled by returning a `Response` object.
+
+Example:
 
 ```python
 from starlette.responses import PlainTextResponse
 
-async def serve(req):
-    return PlainTextResponse("Hello, World!")
-```
 
-### Query Parameters
-
-```python
 async def serve(req):
     name = req.query_params.get("name", "world")
-    return {"hello": name}
+    return PlainTextResponse(f"hello {name}")
 ```
 
-### POST Request Handler
-
-```python
-async def serve(req):
-    body = await req.json()
-    return body  # Echo back the request body
-```
-
-### Custom Status Codes
-
-```python
-from starlette.responses import Response
-
-async def serve(req):
-    return Response(status_code=204)
-```
-
-## Command Line Options
+## CLI
 
 ```bash
-stardust [options] [file]
+stardust [file]
+stardust --file path/to/app.py --host 127.0.0.1 --port 9000 --log-level info --debug
+```
 
 Options:
-  --port PORT        Port number (default: 8000)
-  --host HOST        Host address (default: 0.0.0.0)
-  --log-level LEVEL  Logging level (default: error)
-  --debug           Enable debug mode
-```
 
-## Development
+- `file`: optional positional target, defaults to `app.py`
+- `--file`: explicit target path to a Python file or package directory
+- `--host`: bind host, defaults to `0.0.0.0`
+- `--port`: bind port, defaults to `8000`
+- `--log-level`: one of `critical`, `error`, `warning`, `info`, `debug`
+- `--debug`: enables Starlette debug mode and Uvicorn access logs
 
-To set up the development environment:
+If no local function is found, the CLI exits with status code `1`.
+
+## Examples
+
+The [`examples/`](/Users/luke/Projects/stardust/examples) directory contains small runnable apps, including:
+
+- JSON responses
+- plain text responses
+- query parameter handling
+- multiple functions in one module
+- package-based app loading
+
+## Developer Documentation
+
+Detailed developer documentation lives in [`docs/`](/Users/luke/Projects/stardust/docs):
+
+- [`docs/overview.md`](/Users/luke/Projects/stardust/docs/overview.md)
+- [`docs/architecture.md`](/Users/luke/Projects/stardust/docs/architecture.md)
+- [`docs/development.md`](/Users/luke/Projects/stardust/docs/development.md)
+- [`docs/testing.md`](/Users/luke/Projects/stardust/docs/testing.md)
+
+## Local Development
 
 ```bash
-# Clone the repository
-git clone https://github.com/lukefx/stardust
-cd stardust
-
-# Install development dependencies
 uv sync --all-extras --dev
-
-# Run tests
 uv run pytest
 ```
 
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Acknowledgements
-
-Built with:
-- [Starlette](https://www.starlette.io/)
-- [Uvicorn](https://www.uvicorn.org/)
-
----
-
-Created by [Luca Simone](mailto:info@lucasimone.info)
+MIT. See [`LICENSE.txt`](/Users/luke/Projects/stardust/LICENSE.txt).
