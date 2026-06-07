@@ -1,82 +1,218 @@
 # Development Guide
 
-## Environment Setup
+This guide is for people changing Stardust itself. If you only want to run a
+Stardust application, start with the project `README.md`.
 
-Stardust uses a standard Python package layout under `src/`.
+Stardust is intentionally small: it loads one Python function, wraps it in a
+Starlette app, and serves it with Uvicorn. Most changes should preserve that
+shape unless they are explicitly meant to expand the public contract.
 
-Recommended setup:
+## Quick Start
+
+Prerequisites:
+
+- Python 3.10 or newer
+- `uv`
+
+Set up the development environment:
 
 ```bash
 uv sync --all-extras --dev
 ```
 
-If you prefer plain `pip`, install the package in editable mode with the dev dependencies declared in `pyproject.toml`.
+Run the test suite:
 
-## Repository Structure
-
-```text
-src/stardust/          package source
-tests/                 automated tests
-examples/              runnable example apps
-README.md              project overview
-pyproject.toml         package metadata and dependencies
+```bash
+uv run pytest
 ```
 
-## Working on the Loader
+Build the package locally:
 
-Most subtle behavior lives in [`src/stardust/file_handler.py`](/Users/luke/Projects/stardust/src/stardust/file_handler.py).
+```bash
+uv build
+```
 
-Be careful with:
+Run one of the examples:
 
-- module naming collisions in `sys.modules`
-- package directory support
-- imported versus local function detection
-- deterministic function selection
+```bash
+uv run stardust examples/app.py
+```
 
-If you change app discovery behavior, update tests in [`tests/test_handle_file.py`](/Users/luke/Projects/stardust/tests/test_handle_file.py).
+Then open `http://localhost:8000/`.
 
-## Working on the Framework Wrapper
+## Repository Map
 
-Most HTTP behavior lives in [`src/stardust/stardust.py`](/Users/luke/Projects/stardust/src/stardust/stardust.py).
+```text
+src/stardust/          Package source
+tests/                 Automated tests
+examples/              Small runnable Stardust apps
+docs/                  Developer and architecture notes
+README.md              User-facing overview and quick start
+pyproject.toml         Package metadata, dependencies, and script entry point
+uv.lock                Locked dependency graph for reproducible local installs
+```
 
-Common change categories:
+Important source files:
 
-- adding methods or routes
-- changing middleware defaults
-- extending response coercion
-- changing handler invocation rules
+- `src/stardust/cli.py`: command-line parsing and process startup
+- `src/stardust/file_handler.py`: app module loading and function discovery
+- `src/stardust/stardust.py`: Starlette app construction and response handling
+- `src/stardust/py.typed`: marker file declaring the package as typed
 
-Keep sync and async handlers working unless there is a deliberate breaking change.
+## Daily Workflow
+
+Use a small edit-test loop:
+
+```bash
+uv run pytest tests/test_handle_file.py
+uv run pytest tests/test_simple_app.py
+uv run pytest
+```
+
+For runtime checks, prefer the examples over ad hoc scratch files. They document
+the intended behavior and make it easier to spot regressions:
+
+```bash
+uv run stardust examples/plain_text_response.py
+uv run stardust examples/query_params.py
+uv run stardust examples/example_module
+```
+
+When changing public behavior, update docs in the same change. This project has
+a small enough surface area that code, tests, examples, and docs should stay in
+sync.
+
+## Design Principles
+
+Keep the core contract simple:
+
+- A user points Stardust at a Python file or package directory.
+- Stardust finds one local function.
+- Stardust serves that function at `/`.
+- The function may be synchronous or asynchronous.
+- If the function accepts parameters, it receives the Starlette `Request`.
+- Starlette `Response` objects pass through unchanged.
+- Other return values are wrapped in `JSONResponse`.
+
+Prefer explicit behavior over clever inference. Stardust should be easy to
+explain from a short example, and failures should point users toward a concrete
+fix.
+
+## Working on App Loading
+
+App loading lives in `src/stardust/file_handler.py`.
+
+The loader accepts either:
+
+- a Python file
+- a package directory containing `__init__.py`
+
+The loaded module is registered as `stardust.app` in `sys.modules`. Tests that
+load temporary modules should clean that entry before running so state from one
+test cannot leak into another.
+
+Be careful when changing:
+
+- how paths are classified as files or directories
+- how package directories are resolved
+- how imported functions are excluded
+- how the first local function is selected
+- how module names are registered in `sys.modules`
+
+If discovery behavior changes, update `tests/test_handle_file.py` and add or
+adjust examples when the new behavior is user-visible.
+
+## Working on HTTP Behavior
+
+HTTP behavior lives in `src/stardust/stardust.py`.
+
+The most important path is `Stardust.__wrap_response()`:
+
+1. Inspect the handler signature.
+2. Call the handler with `Request` if it accepts at least one parameter.
+3. Await the result if the handler is asynchronous.
+4. Return existing Starlette `Response` objects unchanged.
+5. Wrap every other result in `JSONResponse`.
+
+Keep both synchronous and asynchronous handlers working. If you change response
+normalization, add tests for both ordinary JSON values and explicit Starlette
+responses.
+
+`Stardust.build()` owns middleware and route construction. Changes here are
+usually public behavior changes because they affect every served app.
 
 ## Working on the CLI
 
-CLI behavior lives in [`src/stardust/cli.py`](/Users/luke/Projects/stardust/src/stardust/cli.py).
+CLI behavior lives in `src/stardust/cli.py`.
 
-When adding flags:
+The CLI should stay thin:
 
-- keep positional `file` behavior intact unless there is a strong reason not to
-- update CLI tests
-- document default values in `README.md`
+- parse arguments
+- load the user function
+- construct `Stardust`
+- delegate serving to `uvicorn.run()`
+
+When adding or changing flags:
+
+- preserve `stardust app.py`
+- preserve the default target of `app.py`
+- update `tests/test_cli.py`
+- document the flag in `README.md`
+- include the default value in the documentation
+
+The CLI currently converts missing application functions into a clean exit.
+Other path, import, and runtime errors are allowed to propagate.
 
 ## Backward Compatibility
 
-The framework is small, so even minor edits can be user-visible. Treat these behaviors as compatibility-sensitive:
+Treat these behaviors as compatibility-sensitive:
 
-- default target path of `app.py`
-- serving on `/`
-- support for `GET` and `POST`
-- first-function discovery
-- JSON wrapping of non-`Response` return values
-- permissive CORS
+- default target path is `app.py`
+- root route is `/`
+- supported HTTP methods are `GET` and `POST`
+- discovery uses the first local function
+- handlers may accept zero parameters or at least one request parameter
+- sync and async handlers are both supported
+- non-`Response` values are converted to JSON
+- CORS is permissive by default
 
-If a change intentionally breaks one of these assumptions, note it clearly in docs and tests.
+If a change intentionally breaks one of these assumptions, make that explicit in
+the tests, `README.md`, and the relevant file in `docs/`.
+
+## Dependency Changes
+
+Runtime dependencies belong in `[project.dependencies]` in `pyproject.toml`.
+Test and development-only dependencies belong in the `dev` dependency group.
+
+After changing dependencies, run:
+
+```bash
+uv sync --all-extras --dev
+uv run pytest
+```
+
+Commit both `pyproject.toml` and `uv.lock` when dependency resolution changes.
+
+## Release-Sensitive Changes
+
+Before preparing a release, verify:
+
+- `uv run pytest` passes
+- `uv build` produces a wheel and source distribution
+- the package version in `pyproject.toml` is correct
+- `README.md` still describes the current CLI and app contract
+- new user-facing behavior has at least one test
+
+Publishing is handled by the GitHub workflows in `.github/workflows/`.
 
 ## Documentation Expectations
 
-When changing runtime behavior:
+Use this rule of thumb:
 
-1. Update `README.md` if it affects users.
-2. Update the relevant file in `docs/` if it affects developers.
-3. Update or add tests that capture the new behavior.
+- User-facing behavior changes require `README.md` updates.
+- Contributor workflow changes require `docs/development.md` updates.
+- Architecture or ownership changes require `docs/architecture.md` updates.
+- Test strategy changes require `docs/testing.md` updates.
 
-This project is simple enough that documentation drift is avoidable. Keep the docs close to the code.
+Examples should stay small and runnable. Prefer one clear example per behavior
+over a large example that tries to demonstrate everything.
